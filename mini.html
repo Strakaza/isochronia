@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Isochrone Project</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Dépendance externe pour la carte (Leaflet) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <style>
+        /* --- Styles CSS pour l'aspect "années 90" --- */
+        body {
+            background-color: #FFFFFF;
+            color: #000000;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 16px;
+            margin: 15px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        /* Conteneur principal sans largeur maximale */
+        .container {
+            /* La ligne "max-width: 800px;" a été supprimée ici */
+        }
+
+        /* Style des formulaires */
+        .controls-container {
+            position: relative; /* Ancre pour la boîte de suggestions */
+        }
+        
+        label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        input[type="text"], input[type="number"], select, button {
+            border: 1px solid #999999;
+            background-color: #FFFFFF;
+            padding: 4px;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            width: 300px;
+        }
+
+        button {
+            cursor: pointer;
+            background-color: #E0E0E0;
+            font-weight: bold;
+            min-width: 150px;
+        }
+
+        /* Carte */
+        #map {
+            height: 500px;
+            border: 1px solid #000000;
+            background-color: #F0F0F0;
+        }
+        
+        /* Boîte de suggestions (autocomplétion) */
+        #suggestions-box {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            border: 1px solid #000000;
+            background-color: #FFFFFF;
+            width: 310px; /* Aligné avec l'input */
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .suggestion-item {
+            padding: 5px;
+            cursor: pointer;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+        .suggestion-item:hover {
+            background-color: #000080; /* Bleu marine classique */
+            color: #FFFFFF;
+        }
+
+        /* Pied de page */
+        footer {
+            margin-top: 15px;
+            font-size: 12px;
+            color: #666666;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>ПРОЕКТ_ИЗОХРОНА // プロジェクト等時線</h1>
+        <p>A simple isochrone map utility.</p>
+
+        <hr>
+
+        <form onsubmit="event.preventDefault(); getIsochrone();">
+            <div class="controls-container">
+                <label for="search">Location:</label><br>
+                <input type="text" id="search" placeholder="Enter a city or address...">
+                <div id="suggestions-box"></div>
+            </div>
+            <br>
+            <div>
+                <label for="duration">Travel Time (min):</label><br>
+                <input type="number" id="duration" value="20" min="1" max="60">
+            </div>
+            <br>
+            <div>
+                <label for="profile">Transport Mode:</label><br>
+                <select id="profile">
+                    <option value="driving-traffic">Car (with traffic)</option>
+                    <option value="driving">Car (no traffic)</option>
+                    <option value="walking">Walking</option>
+                    <option value="cycling">Cycling</option>
+                </select>
+            </div>
+            <br>
+            <button id="execute-button" type="submit">Generate Map</button>
+        </form>
+        
+        <br><hr><br>
+
+        <div id="map"></div>
+
+        <footer>
+            <p>&copy; 1996 Isochrone Systems</p>
+        </footer>
+    </div>
+
+
+    <!-- Dépendances externes JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <script>
+        // --- Code JavaScript principal de l'application ---
+
+        // IMPORTANT : Remplacez par votre clé API Mapbox sécurisée et restreinte à votre URL
+        const mapboxAccessToken = 'pk.eyJ1IjoiYW1lZGVlZnQiLCJhIjoiY20ybXp1N3F4MDBweDJrcXIydTIwYmo1NSJ9.lo2Qx-hoTMmHzzmU5QkLww';
+
+        const initialCoords = [35.6895, 139.6917]; 
+        const map = L.map('map').setView(initialCoords, 11);
+
+        // Fond de carte "clair"
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        }).addTo(map);
+
+        // Marqueur par défaut (bleu)
+        const marker = L.marker(initialCoords, { draggable: true }).addTo(map);
+        marker.bindPopup("Starting Point").openPopup();
+
+        let isochroneLayer;
+        
+        const searchInput = document.getElementById('search');
+        const suggestionsBox = document.getElementById('suggestions-box');
+        let geocodingController;
+
+        // Gestion de l'autocomplétion
+        searchInput.addEventListener('input', async (e) => {
+            const query = e.target.value;
+            if (geocodingController) geocodingController.abort();
+            geocodingController = new AbortController();
+            
+            if (query.length < 3) { 
+                suggestionsBox.style.display = 'none';
+                return; 
+            }
+            
+            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${mapboxAccessToken}&autocomplete=true&language=en,ru,ja`;
+
+            try {
+                const response = await fetch(url, { signal: geocodingController.signal });
+                const data = await response.json();
+                displaySuggestions(data.features);
+            } catch (error) {
+                if (error.name !== 'AbortError') console.error("Geocoding Error:", error);
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
+        function displaySuggestions(features) {
+            suggestionsBox.innerHTML = '';
+            if (!features || features.length === 0) {
+                suggestionsBox.style.display = 'none';
+                return;
+            }
+            features.forEach(feature => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.textContent = feature.place_name;
+                item.onclick = () => selectSuggestion(feature);
+                suggestionsBox.appendChild(item);
+            });
+            suggestionsBox.style.display = 'block';
+        }
+
+        function selectSuggestion(feature) {
+            searchInput.value = feature.place_name;
+            suggestionsBox.style.display = 'none';
+            const coords = [feature.center[1], feature.center[0]];
+            map.setView(coords, 13);
+            marker.setLatLng(coords);
+            marker.setPopupContent("Starting Point: " + feature.place_name).openPopup();
+            getIsochrone();
+        }
+        
+        // Cacher les suggestions si on clique ailleurs
+        document.addEventListener('click', (event) => {
+            if (!suggestionsBox.contains(event.target) && event.target !== searchInput) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+        
+        // Fonction principale pour générer la carte isochrone
+        async function getIsochrone() {
+            if (!mapboxAccessToken) {
+                alert("ERROR: Mapbox Access Token not configured.");
+                return;
+            }
+            
+            const executeButton = document.getElementById('execute-button');
+            executeButton.disabled = true;
+            executeButton.textContent = "Processing...";
+
+            const durationInput = document.getElementById('duration');
+            const profile = document.getElementById('profile').value;
+            let duration = parseInt(durationInput.value, 10);
+            
+            if (duration > 60) {
+                alert("Warning: Maximum duration is 60 minutes.");
+                duration = 60;
+                durationInput.value = 60;
+            }
+            
+            const center = marker.getLatLng();
+
+            try {
+                const isochroneUrl = `https://api.mapbox.com/isochrone/v1/mapbox/${profile}/${center.lng},${center.lat}?contours_minutes=${duration}&polygons=true&access_token=${mapboxAccessToken}`;
+                // --- LIGNE CORRIGÉE ICI ---
+                const isoResponse = await fetch(isochroneUrl);
+
+                if (!isoResponse.ok) {
+                    const errorData = await isoResponse.json();
+                    throw new Error(`API Error (${isoResponse.status}): ${errorData.message}`);
+                }
+
+                const data = await isoResponse.json();
+                
+                if (isochroneLayer) {
+                    map.removeLayer(isochroneLayer);
+                }
+                
+                isochroneLayer = L.geoJSON(data, {
+                    style: () => ({
+                        color: '#0000FF', // Bleu
+                        weight: 3,
+                        opacity: 0.8,
+                        fillColor: '#0000FF',
+                        fillOpacity: 0.1
+                    })
+                }).addTo(map);
+                
+                map.flyToBounds(isochroneLayer.getBounds());
+
+            } catch (error) {
+                console.error("Execution Failed:", error);
+                alert(`ERROR: ${error.message}`);
+            } finally {
+                executeButton.disabled = false;
+                executeButton.textContent = "Generate Map";
+            }
+        }
+        
+        // Se déclenche quand on déplace le marqueur
+        marker.on('dragend', function() {
+            searchInput.value = ''; // Vide le champ de recherche
+            getIsochrone();
+        });
+
+        // Génère la carte initiale au chargement
+        window.addEventListener('load', getIsochrone);
+    </script>
+
+</body>
+</html>
