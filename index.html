@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>//SYSTEM_ACCESS:ПРОЕКТ_ИЗОХРОНА_v1.5_CRT</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet CSS (Bibliothèque de carte) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="terminal-window">
+        <header>
+            <h1><span id="typewriter-text"></span><span class="blinking-cursor"></span></h1>
+            <marquee behavior="scroll" direction="left" scrollamount="4">
+                <span class="terminal-text">// SATELLITE LINK [СПУТНИК] ESTABLISHED... ROUTING GEOSPATIAL DATA PACKETS... CONNECTION SECURE... STANDBY FOR QUERY...</span>
+            </marquee>
+        </header>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="search">TARGET_COORDINATES:</label>
+                <input type="text" id="search" placeholder="City, address, location...">
+                <div id="suggestions-box"></div>
+            </div>
+            <div class="control-group">
+                <label for="duration">TRAVEL_TIME [MIN]:</label>
+                <input type="number" id="duration" value="20" min="1" max="60">
+            </div>
+            <div class="control-group">
+                <label for="profile">TRANSPORT_PROTOCOL:</label>
+                <select id="profile">
+                    <option value="driving-traffic">AUTOMOBILE_v3.1(traffic)</option>
+                    <option value="driving">AUTOMOBILE_v1.0</option>
+                    <option value="walking">PEDESTRIAN_UNIT</option>
+                    <option value="cycling">CYCLING_UNIT</option>
+                </select>
+            </div>
+            <button id="execute-button" onclick="getIsochrone()">[ EXECUTE QUERY ]</button>
+        </div>
+        
+        <div id="log-console-container">
+            <h4>SYSTEM_LOG:</h4>
+            <div id="log-console"></div>
+        </div>
+
+        <div id="map"></div>
+
+        <footer>
+            <div>LAST SYSTEM UPDATE: 05.08.1992</div>
+            <div class="hit-counter">VISITORS: 001983</div>
+            <div>
+                <img src="https://cyber.dabamos.de/88x31/netscape2.gif" alt="Best viewed with Netscape Navigator">
+            </div>
+        </footer>
+    </div>
+
+    <!-- Leaflet JS (Bibliothèque de carte) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <script src="script.js"></script>
+
+</body>
+</html>

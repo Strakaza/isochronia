@@ -1,0 +1,289 @@
+/* --- RESET ET STYLE GLOBAL --- */
+* {
+    box-sizing: border-box;
+}
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #000000;
+    color: #FFFFFF;
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    overflow: hidden;
+    text-shadow: 0 0 3px rgba(255, 255, 255, 0.4);
+}
+
+/* --- CONTENEUR PRINCIPAL STYLE "TERMINAL" --- */
+.terminal-window {
+    border: 2px solid #FFFFFF;
+    margin: 10px;
+    padding: 15px;
+    height: calc(100vh - 20px);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 0 50px rgba(0,0,0,0.75);
+}
+
+.terminal-window::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 2;
+    background-size: 100% 3px, 3px 100%;
+    pointer-events: none;
+    animation: flicker 0.15s infinite;
+}
+
+@keyframes flicker {
+    0% { opacity: 0.2; }
+    20% { opacity: 0.8; }
+    40% { opacity: 0.3; }
+    60% { opacity: 0.9; }
+    80% { opacity: 0.4; }
+    100% { opacity: 1; }
+}
+
+/* --- HEADER ET ÉLÉMENTS DÉCORATIFS --- */
+header {
+    border-bottom: 1px solid #FFFFFF;
+    padding-bottom: 10px;
+    flex-shrink: 0;
+    position: relative;
+}
+h1 {
+    font-size: 24px;
+    margin: 0;
+    text-shadow: 0 0 5px #FFFFFF;
+    min-height: 28px;
+}
+.blinking-cursor {
+    animation: blink 1s step-end infinite;
+    display: inline-block;
+    width: 10px;
+    height: 20px;
+    background-color: #FFFFFF;
+    vertical-align: middle;
+    margin-left: 2px;
+}
+@keyframes blink {
+    from, to { background-color: transparent; }
+    50% { background-color: #FFFFFF; }
+}
+.terminal-text {
+    white-space: nowrap;
+}
+marquee {
+    width: 100%;
+    font-size: 16px;
+    border-top: 1px dashed #FFFFFF;
+    border-bottom: 1px dashed #FFFFFF;
+    margin-top: 10px;
+    padding: 5px 0;
+    color: #AAAAAA;
+}
+
+/* --- ZONE DE CONTRÔLE --- */
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-end;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2; 
+}
+.control-group {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+label {
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+input[type="text"], input[type="number"], select, button {
+    background-color: #000000;
+    color: #FFFFFF;
+    border: 1px solid #FFFFFF;
+    padding: 5px;
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    width: 250px;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+}
+button {
+    cursor: pointer;
+    text-transform: uppercase;
+    height: 35px;
+    transition: all 0.1s ease-in-out;
+}
+button:hover {
+    background-color: #FFFFFF;
+    color: #000000;
+    box-shadow: 0 0 10px #FFFFFF;
+}
+button:active {
+    filter: invert(1);
+}
+
+/* --- SUGGESTIONS (AUTOCOMPLÉTION) --- */
+#suggestions-box {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    background-color: #000000;
+    border: 1px solid #FFFFFF;
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+.suggestion-item {
+    padding: 5px 10px;
+    cursor: pointer;
+}
+.suggestion-item:hover {
+    background-color: #FFFFFF;
+    color: #000000;
+}
+
+/* --- STYLES POUR LA CONSOLE DE LOG --- */
+#log-console-container {
+    border: 1px dashed #FFFFFF;
+    padding: 10px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+#log-console-container h4 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+    text-transform: uppercase;
+}
+#log-console {
+    height: 80px;
+    background-color: #0d0d0d;
+    overflow-y: auto;
+    padding: 5px;
+    font-size: 15px;
+    color: #AAAAAA;
+}
+.log-message {
+    margin: 0;
+    padding: 0;
+    white-space: pre-wrap;
+}
+.log-message.error {
+    color: #ff4136;
+}
+.log-message.success {
+    color: #2ecc40;
+}
+
+
+/* --- STYLES SPÉCIFIQUES LEAFLET / CARTE --- */
+#map {
+    border: 1px solid #FFFFFF;
+    flex-grow: 1;
+    background-color: #111;
+    position: relative;
+}
+.custom-map-marker {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    color: #FFFFFF;
+    text-align: center;
+    line-height: 20px;
+    animation: marker-blink 1s step-end infinite;
+}
+.custom-map-marker::before {
+    content: '+';
+}
+@keyframes marker-blink {
+    from, to { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+.leaflet-popup-content-wrapper, .leaflet-popup-tip {
+    background-color: #000000;
+    color: #FFFFFF;
+    border: 1px solid #FFFFFF;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    font-family: 'VT323', monospace;
+}
+
+/* --- PIED DE PAGE --- */
+footer {
+    border-top: 1px solid #FFFFFF;
+    padding-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    font-size: 14px;
+    color: #AAAAAA;
+}
+footer img {
+    height: 31px;
+    width: 88px;
+    filter: grayscale(100%);
+    border: 1px solid #FFFFFF;
+}
+.hit-counter {
+    border: 1px solid white;
+    padding: 2px 8px;
+    background: #222;
+    color: #FFFFFF;
+}
+
+/* --- LOADING SPINNER --- */
+.loading-spinner {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s linear infinite;
+    vertical-align: middle;
+    margin-left: 5px;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* AMÉLIORATION: Animation d'introduction "Terminal Boot" */
+.controls, #log-console-container, #map, footer {
+    opacity: 0;
+    animation: fadeInFromTop 1s ease-out forwards;
+}
+#log-console-container {
+    animation-delay: 0.3s;
+}
+#map {
+    animation-delay: 0.6s;
+}
+footer {
+    animation-delay: 0.9s;
+}
+@keyframes fadeInFromTop {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
