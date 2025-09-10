@@ -15,25 +15,17 @@
             font-size: 16px;
             margin: 15px;
         }
-
         h1 {
             font-size: 28px;
             font-weight: bold;
         }
-
-        .container {
-        }
-
-        /* Style des formulaires */
         .controls-container {
-            position: relative; 
+            position: relative;
         }
-        
         label {
             font-weight: bold;
             margin-right: 10px;
         }
-
         input[type="text"], input[type="number"], select, button {
             border: 1px solid #999999;
             background-color: #FFFFFF;
@@ -41,25 +33,27 @@
             font-family: Arial, Helvetica, sans-serif;
             font-size: 14px;
         }
-
         input[type="text"] {
             width: 300px;
         }
-
         button {
             cursor: pointer;
             background-color: #E0E0E0;
             font-weight: bold;
             min-width: 150px;
         }
-
-        /* Carte */
+        #fullscreen-button {
+            margin-bottom: 10px;
+        }
         #map {
             height: 500px;
             border: 1px solid #000000;
             background-color: #F0F0F0;
         }
-        
+        #map:fullscreen {
+            width: 100vw;
+            height: 100vh;
+        }
         #suggestions-box {
             display: none;
             position: absolute;
@@ -67,7 +61,7 @@
             left: 0;
             border: 1px solid #000000;
             background-color: #FFFFFF;
-            width: 310px; 
+            width: 310px;
             z-index: 1000;
             max-height: 200px;
             overflow-y: auto;
@@ -79,17 +73,14 @@
             font-size: 14px;
         }
         .suggestion-item:hover {
-            background-color: #000080; 
+            background-color: #000080;
             color: #FFFFFF;
         }
-
-        /* Pied de page */
         footer {
             margin-top: 15px;
             font-size: 12px;
             color: #666666;
         }
-
     </style>
 </head>
 <body>
@@ -126,22 +117,22 @@
         </form>
         
         <br><hr><br>
+        
+        <button id="fullscreen-button" onclick="toggleFullscreen()">Toggle Fullscreen</button>
+        <br><br>
 
         <div id="map"></div>
 
         <footer>
-            <p>&copy; 1992 Isochronia Systems</p>
+            <p>&copy; 1996 Isochrone Systems</p>
             <p><a href="index.html">Return to Terminal View</a></p>
-
         </footer>
     </div>
-
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     
     <script>
-
-        const mapboxAccessToken = 'pk.eyJ1Ijoic3RyYWthemEiLCJhIjoiY21mZTNodDIzMDNlcDJsc2c2Zm9ncWlzcSJ9.FP5em2UBGDStxHkhblyN2w';
+        const mapboxAccessToken = 'pk.eyJ1IjoiYW1lZGVlZnQiLCJhIjoiY20ybXp1N3F4MDBweDJrcXIydTIwYmo1NSJ9.lo2Qx-hoTMmHzzmU5QkLww';
 
         const initialCoords = [35.6895, 139.6917]; 
         const map = L.map('map').setView(initialCoords, 11);
@@ -253,7 +244,7 @@
                 
                 isochroneLayer = L.geoJSON(data, {
                     style: () => ({
-                        color: '#0000FF', // Bleu
+                        color: '#0000FF',
                         weight: 3,
                         opacity: 0.8,
                         fillColor: '#0000FF',
@@ -273,8 +264,25 @@
         }
         
         marker.on('dragend', function() {
-            searchInput.value = ''; 
+            searchInput.value = '';
             getIsochrone();
+        });
+
+        function toggleFullscreen() {
+            const mapContainer = document.getElementById('map');
+            if (!document.fullscreenElement) {
+                mapContainer.requestFullscreen().catch(err => {
+                    alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 100);
         });
 
         window.addEventListener('load', getIsochrone);
