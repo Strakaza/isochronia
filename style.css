@@ -1,4 +1,3 @@
-/* --- RESET ET STYLE GLOBAL --- */
 * {
     box-sizing: border-box;
 }
@@ -14,7 +13,6 @@ html, body {
     text-shadow: 0 0 3px rgba(255, 255, 255, 0.4);
 }
 
-/* --- CONTENEUR PRINCIPAL STYLE "TERMINAL" --- */
 .terminal-window {
     border: 2px solid #FFFFFF;
     margin: 10px;
@@ -92,7 +90,6 @@ marquee {
     color: #AAAAAA;
 }
 
-/* --- ZONE DE CONTRÔLE --- */
 .controls {
     display: flex;
     flex-wrap: wrap;
@@ -136,7 +133,6 @@ button:active {
     filter: invert(1);
 }
 
-/* --- SUGGESTIONS (AUTOCOMPLÉTION) --- */
 #suggestions-box {
     position: absolute;
     top: calc(100% + 5px);
@@ -223,7 +219,6 @@ button:active {
     font-family: 'VT323', monospace;
 }
 
-/* --- PIED DE PAGE --- */
 footer {
     border-top: 1px solid #FFFFFF;
     padding-top: 10px;
@@ -233,6 +228,21 @@ footer {
     flex-shrink: 0;
     font-size: 14px;
     color: #AAAAAA;
+}
+
+.color-bar-signature {
+    height: 4px;
+    width: 100%;
+    max-width: 250px;
+    margin: 0rem auto; /* Espacement vertical et centrage horizontal */
+    border-radius: 2px;
+    background: linear-gradient(to right, 
+        #8B5CF6 0%, #8B5CF6 20%,    /* Violet */
+        #3B82F6 20%, #3B82F6 40%,   /* Bleu */
+        #22C55E 40%, #22C55E 60%,   /* Vert */
+        #FFDB59 60%, #FFDB59 80%,   /* Orange */
+        #EF4444 80%, #EF4444 100%   /* Rouge */
+    );
 }
 footer img {
     height: 31px;
@@ -247,7 +257,6 @@ footer img {
     color: #FFFFFF;
 }
 
-/* --- LOADING SPINNER --- */
 .loading-spinner {
     display: inline-block;
     width: 15px;
@@ -263,7 +272,6 @@ footer img {
     to { transform: rotate(360deg); }
 }
 
-/* AMÉLIORATION: Animation d'introduction "Terminal Boot" */
 .controls, #log-console-container, #map, footer {
     opacity: 0;
     animation: fadeInFromTop 1s ease-out forwards;
